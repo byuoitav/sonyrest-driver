@@ -11,6 +11,10 @@ import (
 	"github.com/byuoitav/common/structs"
 )
 
+func (t *TV) GetInfo(ctx context.Context) (interface{}, error) {
+	return nil, nil
+}
+
 // GetHardwareInfo returns the hardware information for the device
 func (t *TV) GetHardwareInfo(ctx context.Context) (structs.HardwareInfo, *nerr.E) {
 	var toReturn structs.HardwareInfo
