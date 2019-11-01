@@ -1,4 +1,4 @@
-module github.com/byuoitav/sonyrest
+module github.com/byuoitav/sonyrest-driver
 
 go 1.13
 
