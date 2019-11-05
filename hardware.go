@@ -20,9 +20,9 @@ func (t *TV) GetHardwareInfo(ctx context.Context) (structs.HardwareInfo, *nerr.E
 	var toReturn structs.HardwareInfo
 
 	// get the hostname
-	addr, e := net.LookupAddr(t.address)
+	addr, e := net.LookupAddr(t.Address)
 	if e != nil {
-		toReturn.Hostname = t.address
+		toReturn.Hostname = t.Address
 	} else {
 		toReturn.Hostname = strings.Trim(addr[0], ".")
 	}
@@ -30,7 +30,7 @@ func (t *TV) GetHardwareInfo(ctx context.Context) (structs.HardwareInfo, *nerr.E
 	// get Sony TV system information
 	systemInfo, err := t.getSystemInfo(ctx)
 	if err != nil {
-		err.Addf("Could not get system info from %s", t.address)
+		err.Addf("Could not get system info from %s", t.Address)
 		return toReturn, err
 	}
 
@@ -41,7 +41,7 @@ func (t *TV) GetHardwareInfo(ctx context.Context) (structs.HardwareInfo, *nerr.E
 	// get Sony TV network settings
 	networkInfo, err := t.getNetworkInfo(ctx)
 	if err != nil {
-		err.Addf("Could not get network info from %s", t.address)
+		err.Addf("Could not get network info from %s", t.Address)
 		return toReturn, err
 	}
 

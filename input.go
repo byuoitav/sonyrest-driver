@@ -10,7 +10,6 @@ import (
 	"github.com/byuoitav/common/nerr"
 
 	"github.com/byuoitav/common/status"
-	"github.com/byuoitav/common/structs"
 )
 
 // GetInput gets the input that is currently being shown on the TV
@@ -58,8 +57,8 @@ func (t *TV) GetInput(ctx context.Context) (status.Input, error) {
 }
 
 // GetActiveSignal determines if the current input on the TV is active or not
-func (t *TV) GetActiveSignal(ctx context.Context, port string) (structs.ActiveSignal, *nerr.E) {
-	var output structs.ActiveSignal
+func (t *TV) GetActiveSignal(ctx context.Context, port string) (bool, error) {
+	var activeSignal bool
 
 	payload := SonyTVRequest{
 		Params:  []map[string]interface{}{},
@@ -70,13 +69,13 @@ func (t *TV) GetActiveSignal(ctx context.Context, port string) (structs.ActiveSi
 
 	response, err := t.PostHTTPWithContext(ctx, "avContent", payload)
 	if err != nil {
-		return output, nerr.Translate(err)
+		return activeSignal, nerr.Translate(err)
 	}
 
 	var outputStruct SonyMultiAVContentResponse
 	err = json.Unmarshal(response, &outputStruct)
 	if err != nil || len(outputStruct.Result) < 1 {
-		return output, nerr.Translate(err)
+		return activeSignal, nerr.Translate(err)
 	}
 	//we need to parse the response for the value
 
@@ -90,9 +89,9 @@ func (t *TV) GetActiveSignal(ctx context.Context, port string) (structs.ActiveSi
 			matches := re.FindStringSubmatch(result.URI)
 			tempActive := fmt.Sprintf("%v!%v", matches[1], matches[2])
 
-			output.Active = (tempActive == port)
+			activeSignal = (tempActive == port)
 		}
 	}
 
-	return output, nil
+	return activeSignal, nil
 }
