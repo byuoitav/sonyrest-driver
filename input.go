@@ -52,7 +52,7 @@ func (t *TV) GetInput(ctx context.Context) (status.Input, error) {
 	matches := re.FindStringSubmatch(outputStruct.Result[0].URI)
 	output.Input = fmt.Sprintf("%v!%v", matches[1], matches[2])
 
-	log.L.Infof("Current Input for %s: %s", t.address, output.Input)
+	log.L.Infof("Current Input for %s: %s", t.Address, output.Input)
 
 	return output, nil
 }

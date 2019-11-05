@@ -10,7 +10,7 @@ import (
 )
 
 func (t *TV) GetVolume(ctx context.Context) (status.Volume, error) {
-	log.L.Infof("Getting volume for %v", t.address)
+	log.L.Infof("Getting volume for %v", t.Address)
 	parentResponse, err := t.getAudioInformation(ctx)
 	if err != nil {
 		return status.Volume{}, err
@@ -55,7 +55,7 @@ func (t *TV) getAudioInformation(ctx context.Context) (SonyAudioResponse, error)
 }
 
 func (t *TV) GetMute(ctx context.Context) (status.Mute, error) {
-	log.L.Infof("Getting mute status for %v", t.address)
+	log.L.Infof("Getting mute status for %v", t.Address)
 	parentResponse, err := t.getAudioInformation(ctx)
 	if err != nil {
 		return status.Mute{}, err

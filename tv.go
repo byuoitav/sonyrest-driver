@@ -1,6 +1,6 @@
 package sonyrest
 
 type TV struct {
-	address string
+	Address string
 	PSK     string
 }

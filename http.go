@@ -91,7 +91,7 @@ func (t *TV) PostHTTPWithContext(ctx context.Context, service string, payload So
 		return []byte{}, err
 	}
 
-	addr := fmt.Sprintf("http://%s/sony/%s", t.address, service)
+	addr := fmt.Sprintf("http://%s/sony/%s", t.Address, service)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", addr, bytes.NewBuffer(reqBody))
 	if err != nil {
