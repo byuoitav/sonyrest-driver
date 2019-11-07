@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/nerr"
@@ -52,6 +53,23 @@ func (t *TV) GetInput(ctx context.Context) (string, error) {
 	log.L.Infof("Current Input for %s: %s", t.Address, output)
 
 	return output, nil
+}
+
+func (t *TV) SetInput(ctx context.Context, input string) error {
+	log.L.Infof("Switching input for %s to %s ...", t.Address, input)
+
+	splitPort := strings.Split(input, "!")
+
+	params := make(map[string]interface{})
+	params["uri"] = fmt.Sprintf("extInput:%s?port=%s", splitPort[0], splitPort[1])
+
+	err := t.BuildAndSendPayload(ctx, t.Address, "avContent", "setPlayContent", params)
+	if err != nil {
+		return err
+	}
+
+	log.L.Debugf("Done.")
+	return nil
 }
 
 // GetActiveSignal determines if the current input on the TV is active or not
