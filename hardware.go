@@ -61,7 +61,7 @@ func (t *TV) GetHardwareInfo(ctx context.Context) (structs.HardwareInfo, *nerr.E
 		return toReturn, err
 	}
 
-	toReturn.PowerStatus = powerStatus.Power
+	toReturn.PowerStatus = powerStatus
 
 	return toReturn, nil
 }

@@ -8,19 +8,17 @@ import (
 
 	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/nerr"
-
-	"github.com/byuoitav/common/status"
 )
 
 // GetInput gets the input that is currently being shown on the TV
-func (t *TV) GetInput(ctx context.Context) (status.Input, error) {
-	var output status.Input
+func (t *TV) GetInput(ctx context.Context) (string, error) {
+	var output string
 
 	pwrState, err := t.GetPower(ctx)
 	if err != nil {
 		return output, err
 	}
-	if pwrState.Power != "on" {
+	if pwrState != "on" {
 		return output, nil
 	}
 
@@ -49,9 +47,9 @@ func (t *TV) GetInput(ctx context.Context) (status.Input, error) {
 	re := regexp.MustCompile(regexStr)
 
 	matches := re.FindStringSubmatch(outputStruct.Result[0].URI)
-	output.Input = fmt.Sprintf("%v!%v", matches[1], matches[2])
+	output = fmt.Sprintf("%v!%v", matches[1], matches[2])
 
-	log.L.Infof("Current Input for %s: %s", t.Address, output.Input)
+	log.L.Infof("Current Input for %s: %s", t.Address, output)
 
 	return output, nil
 }

@@ -7,11 +7,41 @@ import (
 	"time"
 
 	"github.com/byuoitav/common/log"
-
-	"github.com/byuoitav/common/status"
 )
 
-func (t *TV) SetPower(ctx context.Context, status bool) error {
+func (t *TV) GetPower(ctx context.Context) (string, error) {
+	var output string
+
+	payload := SonyTVRequest{
+		Params: []map[string]interface{}{},
+		Method: "getPowerStatus", Version: "1.0",
+		ID: 1,
+	}
+
+	response, err := t.PostHTTPWithContext(ctx, "system", payload)
+	if err != nil {
+		return "", err
+	}
+
+	powerStatus := string(response)
+	if strings.Contains(powerStatus, "active") {
+		output = "on"
+	} else if strings.Contains(powerStatus, "standby") {
+		output = "standby"
+	} else {
+		return "", errors.New("Error getting power status")
+	}
+
+	return output, nil
+}
+
+func (t *TV) SetPower(ctx context.Context, power string) error {
+	var status bool
+	if power == "standby" {
+		status = false
+	} else {
+		status = true
+	}
 	params := make(map[string]interface{})
 	params["status"] = status
 
@@ -43,40 +73,14 @@ func (t *TV) SetPower(ctx context.Context, status bool) error {
 				return err
 			}
 
-			log.L.Infof("Waiting for display power to change to %v, current status %s", status, power.Power)
+			log.L.Infof("Waiting for display power to change to %v, current status %s", status, power)
 
 			switch {
-			case status && power.Power == "on":
+			case status && power == "on":
 				return nil
-			case !status && power.Power == "standby":
+			case !status && power == "standby":
 				return nil
 			}
 		}
 	}
-}
-
-func (t *TV) GetPower(ctx context.Context) (status.Power, error) {
-	var output status.Power
-
-	payload := SonyTVRequest{
-		Params: []map[string]interface{}{},
-		Method: "getPowerStatus", Version: "1.0",
-		ID: 1,
-	}
-
-	response, err := t.PostHTTPWithContext(ctx, "system", payload)
-	if err != nil {
-		return status.Power{}, err
-	}
-
-	powerStatus := string(response)
-	if strings.Contains(powerStatus, "active") {
-		output.Power = "on"
-	} else if strings.Contains(powerStatus, "standby") {
-		output.Power = "standby"
-	} else {
-		return status.Power{}, errors.New("Error getting power status")
-	}
-
-	return output, nil
 }

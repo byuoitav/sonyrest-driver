@@ -5,26 +5,24 @@ import (
 	"encoding/json"
 
 	"github.com/byuoitav/common/log"
-
-	"github.com/byuoitav/common/status"
 )
 
-func (t *TV) GetVolume(ctx context.Context) (status.Volume, error) {
+func (t *TV) GetVolume(ctx context.Context) (int, error) {
 	log.L.Infof("Getting volume for %v", t.Address)
 	parentResponse, err := t.getAudioInformation(ctx)
 	if err != nil {
-		return status.Volume{}, err
+		return 0, err
 	}
 	log.L.Infof("%v", parentResponse)
 
-	var output status.Volume
+	var output int
 	for _, outerResult := range parentResponse.Result {
 
 		for _, result := range outerResult {
 
 			if result.Target == "speaker" {
 
-				output.Volume = result.Volume
+				output = result.Volume
 			}
 		}
 	}
@@ -54,18 +52,18 @@ func (t *TV) getAudioInformation(ctx context.Context) (SonyAudioResponse, error)
 
 }
 
-func (t *TV) GetMute(ctx context.Context) (status.Mute, error) {
+func (t *TV) GetMuted(ctx context.Context) (bool, error) {
 	log.L.Infof("Getting mute status for %v", t.Address)
 	parentResponse, err := t.getAudioInformation(ctx)
 	if err != nil {
-		return status.Mute{}, err
+		return false, err
 	}
-	var output status.Mute
+	var output bool
 	for _, outerResult := range parentResponse.Result {
 		for _, result := range outerResult {
 			if result.Target == "speaker" {
 				log.L.Infof("local mute: %v", result.Mute)
-				output.Muted = result.Mute
+				output = result.Mute
 			}
 		}
 	}

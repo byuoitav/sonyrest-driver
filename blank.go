@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/byuoitav/common/log"
-	"github.com/byuoitav/common/status"
 )
 
 type SonyBaseResult struct {
@@ -16,10 +15,10 @@ type SonyBaseResult struct {
 	Error  []interface{}       `json:"error"`
 }
 
-//GetBlanked gets/sets the blanked status
-func (t *TV) GetBlanked(ctx context.Context) (status.Blanked, error) {
+//GetBlanked gets the blanked status
+func (t *TV) GetBlanked(ctx context.Context) (bool, error) {
 
-	var blanked status.Blanked
+	var blanked bool
 
 	payload := SonyTVRequest{
 		Params:  []map[string]interface{}{},
@@ -33,13 +32,13 @@ func (t *TV) GetBlanked(ctx context.Context) (status.Blanked, error) {
 	resp, err := t.PostHTTPWithContext(ctx, "system", payload)
 	if err != nil {
 		log.L.Infof("ERROR: %v", err.Error())
-		return blanked, err
+		return false, err
 	}
 
 	re := SonyBaseResult{}
 	err = json.Unmarshal(resp, &re)
 	if err != nil {
-		return blanked, errors.New(fmt.Sprintf("failed to unmarshal response from tv: %s", err))
+		return false, errors.New(fmt.Sprintf("failed to unmarshal response from tv: %s", err))
 	}
 
 	// make sure there is a result
@@ -49,11 +48,51 @@ func (t *TV) GetBlanked(ctx context.Context) (status.Blanked, error) {
 
 	if val, ok := re.Result[0]["mode"]; ok {
 		if val == "pictureOff" {
-			blanked.Blanked = true
+			blanked = true
 		} else {
-			blanked.Blanked = false
+			blanked = false
 		}
 	}
 
 	return blanked, nil
+}
+
+func (t *TV) SetBlanked(ctx context.Context, blanked bool) error {
+	var blankcmd string
+	if blanked == true {
+		blankcmd = "pictureOff"
+	} else if blanked == false {
+		blankcmd = "pictureOn"
+	}
+
+	params := make(map[string]interface{})
+	params["mode"] = blankcmd
+
+	payload := SonyTVRequest{
+		Params:  []map[string]interface{}{params},
+		Method:  "setPowerSavingMode",
+		Version: "1.0",
+		ID:      1,
+	}
+
+	log.L.Infof("%+v", payload)
+
+	resp, err := t.PostHTTPWithContext(ctx, "system", payload)
+	if err != nil {
+		log.L.Infof("ERROR: %v", err.Error())
+		return err
+	}
+
+	re := SonyBaseResult{}
+	err = json.Unmarshal(resp, &re)
+	if err != nil {
+		return errors.New(fmt.Sprintf("failed to unmarshal response from tv: %s", err))
+	}
+
+	// make sure there is a result
+	if len(re.Result) == 0 {
+		return errors.New(fmt.Sprintf("error response from tv: %s", re.Error))
+	}
+
+	return nil
 }
