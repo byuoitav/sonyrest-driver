@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net"
+	"strconv"
 	"strings"
 
 	"github.com/byuoitav/common/log"
@@ -61,7 +62,7 @@ func (t *TV) GetHardwareInfo(ctx context.Context) (structs.HardwareInfo, *nerr.E
 		return toReturn, err
 	}
 
-	toReturn.PowerStatus = powerStatus
+	toReturn.PowerStatus = strconv.FormatBool(powerStatus)
 
 	return toReturn, nil
 }

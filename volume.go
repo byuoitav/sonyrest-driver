@@ -10,31 +10,31 @@ import (
 	"github.com/byuoitav/common/log"
 )
 
-func (t *TV) GetVolumeByBlock(ctx context.Context, block string) (int, error) {
+func (t *TV) GetVolumes(ctx context.Context, blocks []string) (map[string]int, error) {
 	log.L.Infof("Getting volume for %v", t.Address)
+	toReturn := make(map[string]int)
 	parentResponse, err := t.getAudioInformation(ctx)
 	if err != nil {
-		return 0, err
+		return toReturn, err
 	}
 	log.L.Infof("%v", parentResponse)
 
-	var output int
 	for _, outerResult := range parentResponse.Result {
 
 		for _, result := range outerResult {
 
 			if result.Target == "speaker" {
 
-				output = result.Volume
+				toReturn[""] = result.Volume
 			}
 		}
 	}
 	log.L.Infof("Done")
 
-	return output, nil
+	return toReturn, nil
 }
 
-func (t *TV) SetVolumeByBlock(ctx context.Context, block string, volume int) error {
+func (t *TV) SetVolume(ctx context.Context, block string, volume int) error {
 
 	if volume > 100 || volume < 0 {
 		return errors.New("Error: volume must be a value from 0 to 100!")
@@ -86,42 +86,44 @@ func (t *TV) getAudioInformation(ctx context.Context) (SonyAudioResponse, error)
 
 }
 
-func (t *TV) GetMutedByBlock(ctx context.Context, block string) (bool, error) {
+func (t *TV) GetMutes(ctx context.Context, blocks []string) (map[string]bool, error) {
+	toReturn := make(map[string]bool)
 	log.L.Infof("Getting mute status for %v", t.Address)
 	parentResponse, err := t.getAudioInformation(ctx)
 	if err != nil {
-		return false, err
+		return toReturn, err
 	}
-	var output bool
+
 	for _, outerResult := range parentResponse.Result {
 		for _, result := range outerResult {
 			if result.Target == "speaker" {
 				log.L.Infof("local mute: %v", result.Mute)
-				output = result.Mute
+				toReturn[""] = result.Mute
 			}
 		}
 	}
 
 	log.L.Infof("Done")
 
-	return output, nil
+	return toReturn, nil
 }
 
-func (t *TV) SetMutedByBlock(ctx context.Context, block string, muted bool) error {
+func (t *TV) SetMute(ctx context.Context, block string, mute bool) error {
 	params := make(map[string]interface{})
-	params["status"] = muted
+	params["status"] = mute
 
 	err := t.BuildAndSendPayload(ctx, t.Address, "audio", "setAudioMute", params)
 	if err != nil {
 		return err
 	}
 	//we need to validate that it was actually muted
-	postStatus, err := t.GetMutedByBlock(ctx, block)
+	blocks := []string{block}
+	postStatus, err := t.GetMutes(ctx, blocks)
 	if err != nil {
 		return err
 	}
 
-	if postStatus == muted {
+	if postStatus[""] == mute {
 		return nil
 	}
 

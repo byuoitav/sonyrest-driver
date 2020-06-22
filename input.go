@@ -12,14 +12,14 @@ import (
 )
 
 // GetInput gets the input that is currently being shown on the TV
-func (t *TV) GetInput(ctx context.Context) (string, error) {
-	var output string
+func (t *TV) GetAudioVideoInputs(ctx context.Context) (map[string]string, error) {
+	output := make(map[string]string)
 
 	pwrState, err := t.GetPower(ctx)
 	if err != nil {
 		return output, err
 	}
-	if pwrState != "on" {
+	if !pwrState {
 		return output, nil
 	}
 
@@ -48,14 +48,14 @@ func (t *TV) GetInput(ctx context.Context) (string, error) {
 	re := regexp.MustCompile(regexStr)
 
 	matches := re.FindStringSubmatch(outputStruct.Result[0].URI)
-	output = fmt.Sprintf("%v!%v", matches[1], matches[2])
+	output[""] = fmt.Sprintf("%v!%v", matches[1], matches[2])
 
-	log.L.Infof("Current Input for %s: %s", t.Address, output)
+	log.L.Infof("Current Input for %s: %s", t.Address, output[""])
 
 	return output, nil
 }
 
-func (t *TV) SetInput(ctx context.Context, input string) error {
+func (t *TV) SetAudioVideoInput(ctx context.Context, output, input string) error {
 	log.L.Infof("Switching input for %s to %s ...", t.Address, input)
 
 	splitPort := strings.Split(input, "!")
