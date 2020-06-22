@@ -16,7 +16,7 @@ type SonyBaseResult struct {
 }
 
 //GetBlanked gets the blanked status
-func (t *TV) GetBlanked(ctx context.Context) (bool, error) {
+func (t *TV) GetBlank(ctx context.Context) (bool, error) {
 
 	var blanked bool
 
@@ -57,7 +57,7 @@ func (t *TV) GetBlanked(ctx context.Context) (bool, error) {
 	return blanked, nil
 }
 
-func (t *TV) SetBlanked(ctx context.Context, blanked bool) error {
+func (t *TV) SetBlank(ctx context.Context, blanked bool) error {
 	var blankcmd string
 	if blanked == true {
 		blankcmd = "pictureOff"

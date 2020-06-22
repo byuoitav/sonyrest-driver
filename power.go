@@ -9,8 +9,8 @@ import (
 	"github.com/byuoitav/common/log"
 )
 
-func (t *TV) GetPower(ctx context.Context) (string, error) {
-	var output string
+func (t *TV) GetPower(ctx context.Context) (bool, error) {
+	var output bool
 
 	payload := SonyTVRequest{
 		Params: []map[string]interface{}{},
@@ -20,30 +20,24 @@ func (t *TV) GetPower(ctx context.Context) (string, error) {
 
 	response, err := t.PostHTTPWithContext(ctx, "system", payload)
 	if err != nil {
-		return "", err
+		return false, err
 	}
 
 	powerStatus := string(response)
 	if strings.Contains(powerStatus, "active") {
-		output = "on"
+		output = true
 	} else if strings.Contains(powerStatus, "standby") {
-		output = "standby"
+		output = false
 	} else {
-		return "", errors.New("Error getting power status")
+		return false, errors.New("Error getting power status")
 	}
 
 	return output, nil
 }
 
-func (t *TV) SetPower(ctx context.Context, power string) error {
-	var status bool
-	if power == "standby" {
-		status = false
-	} else {
-		status = true
-	}
+func (t *TV) SetPower(ctx context.Context, power bool) error {
 	params := make(map[string]interface{})
-	params["status"] = status
+	params["status"] = power
 
 	payload := SonyTVRequest{
 		Params:  []map[string]interface{}{params},
@@ -52,7 +46,7 @@ func (t *TV) SetPower(ctx context.Context, power string) error {
 		ID:      1,
 	}
 
-	log.L.Infof("Setting power to %v", status)
+	log.L.Infof("Setting power to %v", power)
 
 	_, err := t.PostHTTPWithContext(ctx, "system", payload)
 	if err != nil {
@@ -68,17 +62,17 @@ func (t *TV) SetPower(ctx context.Context, power string) error {
 		case <-ctx.Done():
 			return errors.New("context timed out while waiting for display to turn on")
 		case <-ticker.C:
-			power, err := t.GetPower(ctx)
+			p, err := t.GetPower(ctx)
 			if err != nil {
 				return err
 			}
 
-			log.L.Infof("Waiting for display power to change to %v, current status %s", status, power)
+			log.L.Infof("Waiting for display power to change to %v, current status %s", power, p)
 
 			switch {
-			case status && power == "on":
+			case p && power:
 				return nil
-			case !status && power == "standby":
+			case !p && !power:
 				return nil
 			}
 		}
