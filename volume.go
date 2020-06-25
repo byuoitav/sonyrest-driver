@@ -3,6 +3,7 @@ package sonyrest
 import (
 	"context"
 	"errors"
+	"strconv"
 	"time"
 
 	"encoding/json"
@@ -41,10 +42,9 @@ func (t *TV) SetVolume(ctx context.Context, block string, volume int) error {
 	}
 
 	log.L.Debugf("Setting volume for %s to %v...", t.Address, volume)
-
 	params := make(map[string]interface{})
 	params["target"] = "speaker"
-	params["volume"] = volume
+	params["volume"] = strconv.Itoa(volume)
 
 	err := t.BuildAndSendPayload(ctx, t.Address, "audio", "setAudioVolume", params)
 	if err != nil {
@@ -54,7 +54,7 @@ func (t *TV) SetVolume(ctx context.Context, block string, volume int) error {
 	//do the same for the headphone
 	params = make(map[string]interface{})
 	params["target"] = "headphone"
-	params["volume"] = volume
+	params["volume"] = strconv.Itoa(volume)
 
 	err = t.BuildAndSendPayload(ctx, t.Address, "audio", "setAudioVolume", params)
 	if err != nil {
